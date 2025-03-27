@@ -1,0 +1,22 @@
+# Binaries
+dist/
+progzer
+progzer-*
+
+# Test files
+test_file
+test_file.gz
+
+# Go specific
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# OS specific
+.DS_Store
+Thumbs.db

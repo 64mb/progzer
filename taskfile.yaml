@@ -1,0 +1,64 @@
+version: '3'
+
+tasks:
+  default:
+    desc: Build using Docker (cross-platform)
+    deps: [build-docker]
+
+  build-docker:
+    desc: Build using Docker for all platforms (linux/amd64, linux/arm64, darwin/arm64)
+    cmds:
+      - mkdir -p dist
+      - docker build -t progzer-builder .
+      - docker create --name progzer-container progzer-builder
+      - docker cp progzer-container:/app/progzer-linux-amd64 dist/
+      - docker cp progzer-container:/app/progzer-linux-arm64 dist/
+      - docker cp progzer-container:/app/progzer-darwin-arm64 dist/
+      - docker rm progzer-container
+      - chmod +x dist/progzer-linux-amd64 dist/progzer-linux-arm64 dist/progzer-darwin-arm64
+
+  build-local:
+    desc: Build locally for current platform only
+    cmds:
+      - mkdir -p dist
+      - go build -o dist/progzer .
+
+  build-linux-amd64:
+    desc: Build locally for Linux AMD64
+    cmds:
+      - mkdir -p dist
+      - GOOS=linux GOARCH=amd64 go build -o dist/progzer-linux-amd64 .
+      - chmod +x dist/progzer-linux-amd64
+
+  build-linux-arm64:
+    desc: Build locally for Linux ARM64
+    cmds:
+      - mkdir -p dist
+      - GOOS=linux GOARCH=arm64 go build -o dist/progzer-linux-arm64 .
+      - chmod +x dist/progzer-linux-arm64
+
+  build-darwin-arm64:
+    desc: Build locally for macOS ARM64
+    cmds:
+      - mkdir -p dist
+      - GOOS=darwin GOARCH=arm64 go build -o dist/progzer-darwin-arm64 .
+      - chmod +x dist/progzer-darwin-arm64
+
+  build-all-local:
+    desc: Build locally for all platforms
+    deps:
+      [build-local, build-linux-amd64, build-linux-arm64, build-darwin-arm64]
+
+  test:
+    desc: Run tests
+    deps: [build-docker]
+    cmds:
+      - chmod +x test.sh
+      - ./test.sh
+
+  clean:
+    desc: Clean up
+    cmds:
+      - rm -rf dist
+      - rm -f test_file test_file.gz
+      - docker rmi progzer-builder || true
