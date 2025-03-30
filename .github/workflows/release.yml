@@ -39,7 +39,7 @@ jobs:
 
       - name: Display the latest tag
         run: |
-          echo "Checked out to the latest tag: ${{ steps.get_latest_tag.outputs.latest_tag }}
+          echo "Checked out to the latest tag: ${{ steps.get_latest_tag.outputs.latest_tag }}"
 
       - name: Set up Go
         uses: actions/setup-go@v4
