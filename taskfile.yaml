@@ -1,10 +1,6 @@
 version: '3'
 
 tasks:
-  default:
-    desc: Build using Docker (cross-platform)
-    deps: [build-docker]
-
   build-docker:
     desc: Build using Docker for all platforms (linux/amd64, linux/arm64, darwin/arm64)
     cmds:
@@ -17,7 +13,7 @@ tasks:
       - docker rm progzer-container
       - chmod +x dist/progzer-linux-amd64 dist/progzer-linux-arm64 dist/progzer-darwin-arm64
 
-  build-local:
+  build:
     desc: Build locally for current platform only
     cmds:
       - mkdir -p dist
@@ -44,17 +40,27 @@ tasks:
       - GOOS=darwin GOARCH=arm64 go build -o dist/progzer-darwin-arm64 .
       - chmod +x dist/progzer-darwin-arm64
 
-  build-all-local:
+  build-all:
     desc: Build locally for all platforms
-    deps:
-      [build-local, build-linux-amd64, build-linux-arm64, build-darwin-arm64]
+    deps: [build-linux-amd64, build-linux-arm64, build-darwin-arm64]
 
-  test:
-    desc: Run tests
-    deps: [build-docker]
+  test-e2e:
+    desc: Run E2E tests
+    deps: [build]
     cmds:
       - chmod +x test.sh
       - ./test.sh
+
+  test:
+    desc: Run app tests
+    cmds:
+      - go test -v ./...
+
+  tests:
+    desc: Run all tests
+    cmds:
+      - task: test
+      - task: test-e2e
 
   clean:
     desc: Clean up

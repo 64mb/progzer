@@ -44,7 +44,7 @@ func main() {
 
 	// Show version and exit if requested
 	if cfg.showVersion {
-		fmt.Printf("Progzer v%s\n", Version)
+		fmt.Printf("version: %s\n", Version)
 		os.Exit(0)
 	}
 
