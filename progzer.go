@@ -14,8 +14,8 @@ import (
 
 // Version information
 const (
-	Version        = "1.0.0"
-	DefaultBarSize = 34 // Default progress bar size in characters
+	Version        = "0.2.0" // Version
+	DefaultBarSize = 34      // Default progress bar size in characters
 )
 
 // Configuration options
@@ -25,6 +25,7 @@ type config struct {
 	quiet       bool
 	barSize     int
 	showVersion bool
+	debug       bool
 }
 
 // Progress holds the state of the progress bar
@@ -35,6 +36,7 @@ type Progress struct {
 	lastUpdate  time.Time
 	refreshRate time.Duration
 	quiet       bool
+	debug       bool
 	barSize     int
 }
 
@@ -44,7 +46,7 @@ func main() {
 
 	// Show version and exit if requested
 	if cfg.showVersion {
-		fmt.Printf("Progzer v%s\n", Version)
+		fmt.Printf("version: %s\n", Version)
 		os.Exit(0)
 	}
 
@@ -75,6 +77,7 @@ func parseFlags() config {
 	flag.BoolVar(&cfg.quiet, "quiet", false, "Don't show progress bar")
 	flag.IntVar(&cfg.barSize, "bar-size", DefaultBarSize, "Size of the progress bar in characters")
 	flag.BoolVar(&cfg.showVersion, "version", false, "Show version information and exit")
+	flag.BoolVar(&cfg.debug, "debug", false, "Debug show each progress on new line")
 	flag.Parse()
 
 	return cfg
@@ -89,6 +92,7 @@ func NewProgress(cfg config) *Progress {
 		lastUpdate:  time.Now().Add(-1 * time.Hour), // Force initial update
 		refreshRate: cfg.refreshRate,
 		quiet:       cfg.quiet,
+		debug:       cfg.debug,
 		barSize:     cfg.barSize,
 	}
 }
@@ -165,7 +169,11 @@ func (p *Progress) updateDisplay() {
 	bar := p.buildProgressBar(elapsed)
 
 	// Print the bar
-	fmt.Fprint(os.Stderr, "\r"+bar)
+	if p.debug {
+		fmt.Fprint(os.Stderr, bar+"\n")
+	} else {
+		fmt.Fprint(os.Stderr, "\r"+bar)
+	}
 }
 
 // buildProgressBar creates the progress bar string
@@ -211,7 +219,7 @@ func (p *Progress) buildProgressBar(elapsed time.Duration) string {
 	if p.totalSize > 0 {
 		statusText = fmt.Sprintf("%s of %s (%s) @ %s%s", readStr, totalStr, completionStr, rateStr, etaStr)
 	} else {
-		statusText = fmt.Sprintf("%s @ %s", readStr, rateStr)
+		statusText = fmt.Sprintf("%s @ %s   ", readStr, rateStr)
 	}
 
 	// Use fixed bar size
@@ -241,13 +249,16 @@ func (p *Progress) buildProgressBar(elapsed time.Duration) string {
 	} else {
 		// Indeterminate mode - show a moving block
 		position := int(elapsed.Milliseconds()/100) % (barWidth * 2)
+		symbol := "=>"
+
 		if position >= barWidth {
 			position = barWidth*2 - position
+			symbol = "<="
 		}
 
 		for i := 0; i < barWidth; i++ {
-			if i == position {
-				bar.WriteString("=>")
+			if i+1 == position && position != barWidth {
+				bar.WriteString(symbol)
 				i++
 			} else {
 				bar.WriteString(" ")

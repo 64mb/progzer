@@ -1,4 +1,4 @@
-# Progzer
+# Progzer - prgz - progress bar cli
 
 [![Build and Release](https://github.com/64mb/progzer/actions/workflows/release.yml/badge.svg)](https://github.com/64mb/progzer/actions/workflows/release.yml)
 [![CI](https://github.com/64mb/progzer/actions/workflows/ci.yml/badge.svg)](https://github.com/64mb/progzer/actions/workflows/ci.yml)
@@ -169,7 +169,6 @@ docker pull ghcr.io/64mb/progzer:latest
 # Run the container
 docker run -i --rm ghcr.io/64mb/progzer
 ```
-
 ## License
 
-MIT
+Apache License 2.0. See [LICENSE](LICENSE) file for details.
