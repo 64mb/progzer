@@ -63,7 +63,7 @@ jobs:
           sed -E -i "s|= \"[0-9]+\.[0-9]+\.[0-9]+\" // Version|= \"${NEW_VERSION}\" // Version|" progzer.go
 
           git add progzer.go
-          git commit -a -m "Up version to ${VERSION} [release]"
+          git commit -a -m "Up version to ${VERSION} [release]" || true
           git push
 
           git tag -a $NEW_TAG -m "Auto-generated tag $NEW_TAG"
