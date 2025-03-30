@@ -14,7 +14,7 @@ import (
 
 // Version information
 const (
-	Version        = "0.2.0" // Version
+	Version        = "0.1.0" // Version
 	DefaultBarSize = 34      // Default progress bar size in characters
 )
 
