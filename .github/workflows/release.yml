@@ -23,10 +23,19 @@ jobs:
 
       - name: Get latest tag
         id: get_latest_tag
-        run: echo "latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))" >> $GITHUB_ENV
+        run: |
+          git fetch --tags
+          LATEST_TAG=$(git tag -l "v*" | sort -V | tail -n 1)
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No existing tags found, starting with v0.1.0"
+            echo "latest_tag=v0.1.0" >> $GITHUB_OUTPUT
+          else
+            echo "Latest tag: $LATEST_TAG"
+            echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          fi
 
       - name: Checkout latest tag
-        run: git checkout ${{ env.latest_tag }}
+        run: git checkout ${{ steps.get_latest_tag.outputs.latest_tag }}
 
       - name: Display the latest tag
         run: |
@@ -72,6 +81,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Fetch all tags
+        run: git fetch --tags
+
+      - name: Get latest tag
+        id: get_latest_tag
+        run: |
+          git fetch --tags
+          LATEST_TAG=$(git tag -l "v*" | sort -V | tail -n 1)
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No existing tags found, starting with v0.1.0"
+            echo "latest_tag=v0.1.0" >> $GITHUB_OUTPUT
+          else
+            echo "Latest tag: $LATEST_TAG"
+            echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          fi
+          VERSION=${LATEST_TAG#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Checkout latest tag
+        run: git checkout ${{ steps.get_latest_tag.outputs.latest_tag }}
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -91,10 +121,27 @@ jobs:
         with:
           images: ghcr.io/64mb/progzer
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=semver,pattern=${{ steps.get_latest_tag.outputs.version }}
             latest
+
+      - name: Extract metadata for Docker
+        id: meta-add
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/64mb/prgz
+          tags: |
+            type=semver,pattern=${{ steps.get_latest_tag.outputs.version }}
+            latest
+
+      - name: Concat Docker tags
+        id: concat
+        run: |
+          IMAGE_NAME_ADD="${{ steps.meta-add.outputs.tags }}"
+          IMAGE_NAME="${{ steps.meta.outputs.tags }}"
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo "${IMAGE_NAME_ADD}" >> $GITHUB_OUTPUT
+          echo "${IMAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -102,5 +149,5 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.concat.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
