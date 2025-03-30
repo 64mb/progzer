@@ -27,8 +27,8 @@ jobs:
           git fetch --tags
           LATEST_TAG=$(git tag -l "v*" | sort -V | tail -n 1)
           if [ -z "$LATEST_TAG" ]; then
-            echo "No existing tags found, starting with v0.1.0"
-            echo "latest_tag=v0.1.0" >> $GITHUB_OUTPUT
+            echo "No existing tags found, starting with v0.0.0"
+            echo "latest_tag=v0.0.0" >> $GITHUB_OUTPUT
           else
             echo "Latest tag: $LATEST_TAG"
             echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
@@ -39,7 +39,7 @@ jobs:
 
       - name: Display the latest tag
         run: |
-          echo "Checked out to the latest tag: ${{ env.latest_tag }}"
+          echo "Checked out to the latest tag: ${{ steps.get_latest_tag.outputs.latest_tag }}
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -59,7 +59,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.latest_tag }}
+          tag_name: ${{ steps.get_latest_tag.outputs.latest_tag }}
           files: |
             dist/progzer-linux-amd64
             dist/prgz-linux-amd64
