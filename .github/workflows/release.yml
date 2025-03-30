@@ -62,8 +62,11 @@ jobs:
           tag_name: ${{ env.latest_tag }}
           files: |
             dist/progzer-linux-amd64
+            dist/prgz-linux-amd64
             dist/progzer-linux-arm64
+            dist/prgz-linux-arm64
             dist/progzer-darwin-arm64
+            dist/prgz-darwin-arm64
           draft: false
           prerelease: false
           generate_release_notes: true
