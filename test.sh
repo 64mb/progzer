@@ -38,18 +38,15 @@ echo "  arch: ${ARCH}"
 
 if [ "$OS" = "Darwin" ] && [ "$ARCH" = "arm64" ]; then
   BINARY="./dist/progzer-darwin-arm64"
-  STAT_CMD="stat -f%z"
 elif [ "$OS" = "Linux" ]; then
   if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
     BINARY="./dist/progzer-linux-arm64"
   else
     BINARY="./dist/progzer-linux-amd64"
   fi
-  STAT_CMD="stat -c%s"
 else
   # default to linux-amd64 for other platforms
   BINARY="./dist/progzer-linux-amd64"
-  STAT_CMD="stat -c%s"
 fi
 
 # if exists local binary
@@ -64,8 +61,8 @@ echo ""
 echo "  creating a random 100MB test file..."
 dd if=/dev/urandom of=test_file bs=1M count=100 >/dev/null 2>&1
 
-# Get file size using the appropriate stat command
-FILE_SIZE=$(${STAT_CMD} test_file)
+# Get file size using the new --get-size flag
+FILE_SIZE=$(${BINARY} --get-size test_file)
 FILE_SUM=$(sha256sum test_file | cut -d ' ' -f1)
 
 echo "  file size (bytes): ${FILE_SIZE}"
@@ -78,7 +75,7 @@ echo ""
 ${BINARY} --size "${FILE_SIZE}" <test_file | gzip -n >test_file.gz
 CHECK_SUM=$(
   # shellcheck disable=SC2094
-  ${BINARY} --size "$(${STAT_CMD} test_file.gz)" <test_file.gz |
+  ${BINARY} --size "$(${BINARY} --get-size test_file.gz)" <test_file.gz |
     gzip -dk |
     sha256sum |
     cut -d ' ' -f1

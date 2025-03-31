@@ -26,6 +26,7 @@ type config struct {
 	barSize     int
 	showVersion bool
 	debug       bool
+	getSizePath string
 }
 
 // Progress holds the state of the progress bar
@@ -47,6 +48,17 @@ func main() {
 	// Show version and exit if requested
 	if cfg.showVersion {
 		fmt.Printf("version: %s\n", Version)
+		os.Exit(0)
+	}
+
+	// Get file size and exit if requested
+	if cfg.getSizePath != "" {
+		fileInfo, err := os.Stat(cfg.getSizePath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("%d\n", fileInfo.Size())
 		os.Exit(0)
 	}
 
@@ -78,6 +90,7 @@ func parseFlags() config {
 	flag.IntVar(&cfg.barSize, "bar-size", DefaultBarSize, "Size of the progress bar in characters")
 	flag.BoolVar(&cfg.showVersion, "version", false, "Show version information and exit")
 	flag.BoolVar(&cfg.debug, "debug", false, "Debug show each progress on new line")
+	flag.StringVar(&cfg.getSizePath, "get-size", "", "Get size of the specified file in bytes and exit")
 	flag.Parse()
 
 	return cfg
