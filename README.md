@@ -6,6 +6,12 @@
 
 Progzer is a command-line utility for displaying progress of Unix commands that support pipes, such as `gzip`, `tar`, etc. It reads from stdin and writes to stdout while displaying a progress bar on stderr.
 
+## Demo
+
+![Gzip size](demo/gzip-size.gif)
+
+![Indeterminate](demo/indeterminate.gif)
+
 ## Features
 
 - Displays a progress bar with percentage completion (when total size is known)
